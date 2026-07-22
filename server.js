@@ -1,29 +1,58 @@
 import * as serverBuild from 'virtual:react-router/server-build';
 import {createRequestHandler, storefrontRedirect} from '@shopify/hydrogen';
+import {waitUntil as vercelWaitUntil} from '@vercel/functions';
 import {createHydrogenRouterContext} from '~/lib/context';
 
 /**
- * Export a fetch handler in module format.
+ * On Oxygen, env comes from Workers bindings.
+ * On Vercel Node, fall back to process.env.
+ * @param {Env | undefined} env
+ * @returns {Env}
+ */
+function resolveEnv(env) {
+  if (env?.SESSION_SECRET) return env;
+  return /** @type {Env} */ (process.env);
+}
+
+/**
+ * On Oxygen, waitUntil comes from ExecutionContext.
+ * On Vercel, use @vercel/functions waitUntil.
+ * @param {ExecutionContext | undefined} executionContext
+ * @returns {ExecutionContext}
+ */
+function resolveExecutionContext(executionContext) {
+  if (executionContext?.waitUntil) return executionContext;
+
+  return /** @type {ExecutionContext} */ ({
+    waitUntil: (promise) => {
+      vercelWaitUntil(promise);
+    },
+    passThroughOnException() {},
+  });
+}
+
+/**
+ * Export a fetch handler in Workers module format.
+ * Local MiniOxygen and the Vercel Node adapter both support this shape.
  */
 export default {
   /**
    * @param {Request} request
-   * @param {Env} env
-   * @param {ExecutionContext} executionContext
+   * @param {Env} [env]
+   * @param {ExecutionContext} [executionContext]
    * @return {Promise<Response>}
    */
   async fetch(request, env, executionContext) {
     try {
+      const resolvedEnv = resolveEnv(env);
+      const resolvedContext = resolveExecutionContext(executionContext);
+
       const hydrogenContext = await createHydrogenRouterContext(
         request,
-        env,
-        executionContext,
+        resolvedEnv,
+        resolvedContext,
       );
 
-      /**
-       * Create a Hydrogen request handler that internally
-       * delegates to React Router for routing and rendering.
-       */
       const handleRequest = createRequestHandler({
         build: serverBuild,
         mode: process.env.NODE_ENV,
@@ -40,11 +69,6 @@ export default {
       }
 
       if (response.status === 404) {
-        /**
-         * Check for redirects only when there's a 404 from the app.
-         * If the redirect doesn't exist, then `storefrontRedirect`
-         * will pass through the 404 response.
-         */
         return storefrontRedirect({
           request,
           response,

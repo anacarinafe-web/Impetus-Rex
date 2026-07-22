@@ -4,9 +4,22 @@ import {hydrogen} from '@shopify/hydrogen/vite';
 import {oxygen} from '@shopify/mini-oxygen/vite';
 import {reactRouter} from '@react-router/dev/vite';
 import tailwindcss from '@tailwindcss/vite';
+import {vercel} from './lib/vercel/index.js';
 
-export default defineConfig({
-  plugins: [tailwindcss(), hydrogen(), oxygen(), reactRouter()],
+export default defineConfig(({command}) => ({
+  plugins: [
+    tailwindcss(),
+    hydrogen(),
+    // MiniOxygen only for local `npm run dev` — not for Vercel Node builds
+    command === 'serve' ? oxygen() : null,
+    // Emits .vercel/output with Node.js Function (not Edge) on production build
+    vercel({
+      serverEntry: './server.js',
+      runtime: 'nodejs22.x',
+      streaming: true,
+    }),
+    reactRouter(),
+  ].filter(Boolean),
   resolve: {
     alias: {
       // Vite's native tsconfig path resolver does not cover JavaScript
@@ -42,4 +55,4 @@ export default defineConfig({
   server: {
     allowedHosts: ['.tryhydrogen.dev'],
   },
-});
+}));
