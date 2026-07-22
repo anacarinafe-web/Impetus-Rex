@@ -1,4 +1,4 @@
-import {createHydrogenContext} from '@shopify/hydrogen';
+import {createHydrogenContext, InMemoryCache} from '@shopify/hydrogen';
 import {AppSession} from '~/lib/session';
 import {CART_QUERY_FRAGMENT} from '~/lib/fragments';
 import {getLocaleFromRequest} from '~/lib/i18n';
@@ -26,6 +26,7 @@ export async function createHydrogenRouterContext(
 ) {
   /**
    * Open a cache instance in the worker and a custom session instance.
+   * On Vercel Node, the Cache API is unavailable — use Hydrogen InMemoryCache.
    */
   if (!env?.SESSION_SECRET) {
     throw new Error('SESSION_SECRET environment variable is not set');
@@ -33,7 +34,9 @@ export async function createHydrogenRouterContext(
 
   const waitUntil = executionContext.waitUntil.bind(executionContext);
   const [cache, session] = await Promise.all([
-    caches.open('hydrogen'),
+    typeof caches !== 'undefined'
+      ? caches.open('hydrogen')
+      : Promise.resolve(new InMemoryCache()),
     AppSession.init(request, [env.SESSION_SECRET]),
   ]);
 
