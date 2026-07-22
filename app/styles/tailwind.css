@@ -4,3 +4,12 @@
  */
 
 @import 'tailwindcss';
+
+:root {
+  --ir-black: #000000;
+  --ir-white: #ffffff;
+  --ir-blue: #2e5bff;
+  --ir-display: 'Archivo Black', 'Syne', sans-serif;
+  --ir-sans: 'Syne', 'Helvetica Neue', sans-serif;
+  --ir-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}

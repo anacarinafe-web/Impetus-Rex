@@ -1,28 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none">
-  <style>
-    .stroke {
-      stroke: #000;
-    }
-    .fill {
-      fill: #000;
-    }
-    @media (prefers-color-scheme: dark) {
-      .stroke {
-        stroke: #fff;
-      }
-      .fill {
-        fill: #fff;
-      }
-    }
-  </style>
-  <path
-    class="stroke"
-    fill-rule="evenodd"
-    d="M16.1 16.04 1 8.02 6.16 5.3l5.82 3.09 4.88-2.57-5.82-3.1L16.21 0l15.1 8.02-5.17 2.72-5.5-2.91-4.88 2.57 5.5 2.92-5.16 2.72Z"
-  />
-  <path
-    class="fill"
-    fill-rule="evenodd"
-    d="M16.1 32 1 23.98l5.16-2.72 5.82 3.08 4.88-2.57-5.82-3.08 5.17-2.73 15.1 8.02-5.17 2.72-5.5-2.92-4.88 2.58 5.5 2.92L16.1 32Z"
-  />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="#000"/>
+  <g fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- horns -->
+    <path d="M12.5 9.5 L13.5 7.5 L14.5 9.5"/>
+    <path d="M16.5 9.5 L17.5 7.5 L18.5 9.5"/>
+    <!-- I -->
+    <path d="M13.8 10.2 V22"/>
+    <!-- R -->
+    <path d="M16.2 22 V10.2 H19.2 C20.8 10.2 21.8 11.4 21.8 12.9 C21.8 14.4 20.8 15.5 19.2 15.5 H16.2"/>
+    <path d="M19 15.5 L21.8 22"/>
+    <!-- left wing -->
+    <path d="M12.5 13 C10 12 8 11.2 6.5 11"/>
+    <path d="M12.5 15 C9.8 14.5 7.5 14.2 5.5 14.5"/>
+    <path d="M12.5 17 C10 17.2 8 18 6.5 19"/>
+    <!-- right wing -->
+    <path d="M20 13 C22 12.2 24 11.5 25.5 11.2"/>
+    <path d="M20.5 15 C23 14.6 25 14.5 26.5 15"/>
+    <!-- devil tail -->
+    <path d="M21.5 21.5 C24 23 26.5 22.5 27.5 20.5"/>
+    <path d="M27.5 20.5 L29 19.2 L28.2 21.8 Z" fill="#fff" stroke="none"/>
+  </g>
 </svg>

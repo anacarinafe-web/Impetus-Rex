@@ -1,24 +1,61 @@
-import {Suspense} from 'react';
-import {Await, NavLink, useAsyncValue} from 'react-router';
+import {Suspense, useEffect, useState} from 'react';
+import {Await, NavLink, useAsyncValue, useLocation} from 'react-router';
 import {useAnalytics, useOptimisticCart} from '@shopify/hydrogen';
 import {useAside} from '~/components/Aside';
+import {
+  IconAccount,
+  IconBag,
+  IconMenu,
+  IconSearch,
+} from '~/components/icons/NavIcons';
 
 /**
  * @param {HeaderProps}
  */
 export function Header({header, isLoggedIn, cart, publicStoreDomain}) {
   const {shop, menu} = header;
+  const location = useLocation();
+  const isHome = isHomePath(location.pathname);
+  const scrolled = useScrolled(24);
+  const solid = !isHome || scrolled;
+
+  const headerClass = [
+    'header',
+    'header--premium',
+    isHome ? 'header--home' : '',
+    solid ? 'header--solid' : 'header--transparent',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
+    <header className={headerClass}>
+      <NavLink
+        className="header-logo"
+        prefetch="intent"
+        to="/"
+        end
+        aria-label={shop.name || 'IMPETUS REX'}
+      >
+        <img
+          src="/images/logo-impetus-rex.png"
+          alt=""
+          width={56}
+          height={59}
+          className="header-logo__mark"
+        />
+        <span className="header-logo__wordmark">
+          <strong>IMPETUS</strong> REX
+        </span>
       </NavLink>
+
       <HeaderMenu
         menu={menu}
         viewport="desktop"
         primaryDomainUrl={header.shop.primaryDomain.url}
         publicStoreDomain={publicStoreDomain}
       />
+
       <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
     </header>
   );
@@ -48,16 +85,15 @@ export function HeaderMenu({
           end
           onClick={close}
           prefetch="intent"
-          style={activeLinkStyle}
-          to="/"
+          className="header-link"
+          to="/collections/all"
         >
-          Home
+          Archive
         </NavLink>
       )}
       {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
         if (!item.url) return null;
 
-        // if the url is internal, we strip the domain
         const url =
           item.url.includes('myshopify.com') ||
           item.url.includes(publicStoreDomain) ||
@@ -66,12 +102,11 @@ export function HeaderMenu({
             : item.url;
         return (
           <NavLink
-            className="header-menu-item"
+            className="header-menu-item header-link"
             end
             key={item.id}
             onClick={close}
             prefetch="intent"
-            style={activeLinkStyle}
             to={url}
           >
             {item.title}
@@ -88,16 +123,21 @@ export function HeaderMenu({
 function HeaderCtas({isLoggedIn, cart}) {
   return (
     <nav className="header-ctas" role="navigation">
-      <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
-        <Suspense fallback="Sign in">
-          <Await resolve={isLoggedIn} errorElement="Sign in">
-            {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
+      <NavLink
+        prefetch="intent"
+        to="/account"
+        className="header-icon-btn"
+        aria-label="Account"
+      >
+        <Suspense fallback={<IconAccount />}>
+          <Await resolve={isLoggedIn} errorElement={<IconAccount />}>
+            {() => <IconAccount />}
           </Await>
         </Suspense>
       </NavLink>
       <SearchToggle />
       <CartToggle cart={cart} />
+      <HeaderMenuMobileToggle />
     </nav>
   );
 }
@@ -106,10 +146,12 @@ function HeaderMenuMobileToggle() {
   const {open} = useAside();
   return (
     <button
-      className="header-menu-mobile-toggle reset"
+      className="header-menu-mobile-toggle header-icon-btn reset"
       onClick={() => open('mobile')}
+      aria-label="Open menu"
+      type="button"
     >
-      <h3>☰</h3>
+      <IconMenu />
     </button>
   );
 }
@@ -117,8 +159,13 @@ function HeaderMenuMobileToggle() {
 function SearchToggle() {
   const {open} = useAside();
   return (
-    <button className="reset" onClick={() => open('search')}>
-      Search
+    <button
+      className="header-icon-btn reset"
+      onClick={() => open('search')}
+      aria-label="Search"
+      type="button"
+    >
+      <IconSearch />
     </button>
   );
 }
@@ -133,6 +180,8 @@ function CartBadge({count}) {
   return (
     <a
       href="/cart"
+      className="header-icon-btn header-cart"
+      aria-label={`Cart, ${count} items`}
       onClick={(e) => {
         e.preventDefault();
         open('cart');
@@ -144,7 +193,10 @@ function CartBadge({count}) {
         });
       }}
     >
-      Cart <span aria-label={`(items: ${count})`}>{count}</span>
+      <IconBag />
+      <span className="header-cart__count" aria-hidden="true">
+        {count > 0 ? count : ''}
+      </span>
     </a>
   );
 }
@@ -168,6 +220,32 @@ function CartBanner() {
   return <CartBadge count={cart?.totalQuantity ?? 0} />;
 }
 
+/**
+ * @param {number} threshold
+ */
+function useScrolled(threshold = 24) {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > threshold);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, {passive: true});
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [threshold]);
+
+  return scrolled;
+}
+
+/**
+ * @param {string} pathname
+ */
+function isHomePath(pathname) {
+  if (pathname === '/') return true;
+  return /^\/[a-z]{2}(-[a-z]{2})?\/?$/i.test(pathname);
+}
+
 const FALLBACK_HEADER_MENU = {
   id: 'gid://shopify/Menu/199655587896',
   items: [
@@ -175,53 +253,31 @@ const FALLBACK_HEADER_MENU = {
       id: 'gid://shopify/MenuItem/461609500728',
       resourceId: null,
       tags: [],
-      title: 'Collections',
+      title: 'Archive',
       type: 'HTTP',
-      url: '/collections',
+      url: '/collections/all',
       items: [],
     },
     {
       id: 'gid://shopify/MenuItem/461609533496',
       resourceId: null,
       tags: [],
-      title: 'Blog',
+      title: 'Journal',
       type: 'HTTP',
       url: '/blogs/journal',
       items: [],
     },
     {
-      id: 'gid://shopify/MenuItem/461609566264',
+      id: 'gid://shopify/MenuItem/461609599032',
       resourceId: null,
       tags: [],
-      title: 'Policies',
-      type: 'HTTP',
-      url: '/policies',
-      items: [],
-    },
-    {
-      id: 'gid://shopify/MenuItem/461609599032',
-      resourceId: 'gid://shopify/Page/92591030328',
-      tags: [],
       title: 'About',
-      type: 'PAGE',
+      type: 'HTTP',
       url: '/pages/about',
       items: [],
     },
   ],
 };
-
-/**
- * @param {{
- *   isActive: boolean;
- *   isPending: boolean;
- * }}
- */
-function activeLinkStyle({isActive, isPending}) {
-  return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'black',
-  };
-}
 
 /** @typedef {'desktop' | 'mobile'} Viewport */
 /**

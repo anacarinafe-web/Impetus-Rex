@@ -1,7 +1,7 @@
 import {Await, Link} from 'react-router';
 import {Suspense, useId} from 'react';
 import {Aside} from '~/components/Aside';
-import {Footer} from '~/components/Footer';
+import {SiteFooter} from '~/components/home/SiteFooter';
 import {Header, HeaderMenu} from '~/components/Header';
 import {CartMain} from '~/components/CartMain';
 import {
@@ -34,12 +34,8 @@ export function PageLayout({
           publicStoreDomain={publicStoreDomain}
         />
       )}
-      <main>{children}</main>
-      <Footer
-        footer={footer}
-        header={header}
-        publicStoreDomain={publicStoreDomain}
-      />
+      <main className="site-main">{children}</main>
+      <SiteFooter footer={footer} />
     </Aside.Provider>
   );
 }
@@ -49,8 +45,12 @@ export function PageLayout({
  */
 function CartAside({cart}) {
   return (
-    <Aside type="cart" heading="CART">
-      <Suspense fallback={<p>Loading cart ...</p>}>
+    <Aside type="cart" heading="BAG">
+      <Suspense
+        fallback={
+          <p className="aside-loading">Loading…</p>
+        }
+      >
         <Await resolve={cart}>
           {(cart) => {
             return <CartMain cart={cart} layout="aside" />;
@@ -66,22 +66,28 @@ function SearchAside() {
   return (
     <Aside type="search" heading="SEARCH">
       <div className="predictive-search">
-        <br />
         <SearchFormPredictive>
           {({fetchResults, goToSearch, inputRef}) => (
-            <>
+            <div className="predictive-search__form">
               <input
                 name="q"
                 onChange={fetchResults}
                 onFocus={fetchResults}
-                placeholder="Search"
+                placeholder="TYPE TO SEARCH"
                 ref={inputRef}
                 type="search"
                 list={queriesDatalistId}
+                className="predictive-search__input"
+                autoComplete="off"
               />
-              &nbsp;
-              <button onClick={goToSearch}>Search</button>
-            </>
+              <button
+                type="button"
+                onClick={goToSearch}
+                className="predictive-search__submit"
+              >
+                ENTER
+              </button>
+            </div>
           )}
         </SearchFormPredictive>
 
@@ -90,7 +96,7 @@ function SearchAside() {
             const {articles, collections, pages, products, queries} = items;
 
             if (state === 'loading' && term.current) {
-              return <div>Loading...</div>;
+              return <div className="aside-loading">Searching…</div>;
             }
 
             if (!total) {
@@ -98,7 +104,7 @@ function SearchAside() {
             }
 
             return (
-              <>
+              <div className="predictive-search__results">
                 <SearchResultsPredictive.Queries
                   queries={queries}
                   queriesDatalistId={queriesDatalistId}
@@ -125,16 +131,14 @@ function SearchAside() {
                 />
                 {term.current && total ? (
                   <Link
+                    className="predictive-search__all"
                     onClick={closeSearch}
                     to={`${SEARCH_ENDPOINT}?q=${term.current}`}
                   >
-                    <p>
-                      View all results for <q>{term.current}</q>
-                      &nbsp; →
-                    </p>
+                    View all results for <q>{term.current}</q>
                   </Link>
                 ) : null}
-              </>
+              </div>
             );
           }}
         </SearchResultsPredictive>
@@ -153,7 +157,7 @@ function MobileMenuAside({header, publicStoreDomain}) {
   return (
     header.menu &&
     header.shop.primaryDomain?.url && (
-      <Aside type="mobile" heading="MENU">
+      <Aside type="mobile" heading="INDEX">
         <HeaderMenu
           menu={header.menu}
           viewport="mobile"

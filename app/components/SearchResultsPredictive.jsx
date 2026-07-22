@@ -237,7 +237,7 @@ function SearchResultsPredictiveEmpty({term}) {
 
   return (
     <p>
-      No results found for <q>{term.current}</q>
+      No signal for <q>{term.current}</q>
     </p>
   );
 }

@@ -55,6 +55,16 @@ export function links() {
       rel: 'preconnect',
       href: 'https://shop.app',
     },
+    {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
+    {
+      rel: 'preconnect',
+      href: 'https://fonts.gstatic.com',
+      crossOrigin: 'anonymous',
+    },
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@500;600;700;800&display=swap',
+    },
     {rel: 'icon', type: 'image/svg+xml', href: favicon},
   ];
 }
@@ -189,11 +199,11 @@ export default function App() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
-  let errorMessage = 'Unknown error';
+  let errorMessage = 'Something went wrong.';
   let errorStatus = 500;
 
   if (isRouteErrorResponse(error)) {
-    errorMessage = error?.data?.message ?? error.data;
+    errorMessage = error?.data?.message ?? error.data ?? 'Page not found.';
     errorStatus = error.status;
   } else if (error instanceof Error) {
     errorMessage = error.message;
@@ -201,13 +211,12 @@ export function ErrorBoundary() {
 
   return (
     <div className="route-error">
-      <h1>Oops</h1>
-      <h2>{errorStatus}</h2>
-      {errorMessage && (
-        <fieldset>
-          <pre>{errorMessage}</pre>
-        </fieldset>
-      )}
+      <p className="route-error__code">{errorStatus}</p>
+      <h1 className="route-error__title">SIGNAL LOST</h1>
+      <p className="route-error__copy">{errorMessage}</p>
+      <a href="/" className="route-error__link">
+        RETURN HOME
+      </a>
     </div>
   );
 }

@@ -1,15 +1,7 @@
-import {createContext, useContext, useEffect, useState} from 'react';
-import {useId} from 'react';
+import {createContext, useContext, useEffect, useState, useId} from 'react';
 
 /**
- * A side bar component with Overlay
- * @example
- * ```jsx
- * <Aside type="search" heading="SEARCH">
- *  <input type="search" />
- *  ...
- * </Aside>
- * ```
+ * Premium side panel — cart, search, mobile menu.
  * @param {{
  *   children?: React.ReactNode;
  *   type: AsideType;
@@ -20,6 +12,7 @@ export function Aside({children, heading, type}) {
   const {type: activeType, close} = useAside();
   const expanded = type === activeType;
   const id = useId();
+
   useEffect(() => {
     const abortController = new AbortController();
 
@@ -44,15 +37,34 @@ export function Aside({children, heading, type}) {
       role="dialog"
       aria-labelledby={id}
     >
-      <button className="close-outside" onClick={close} />
-      <aside>
-        <header>
-          <h3 id={id}>{heading}</h3>
-          <button className="close reset" onClick={close} aria-label="Close">
-            &times;
+      <button
+        className="close-outside"
+        onClick={close}
+        aria-label="Close panel"
+        type="button"
+      />
+      <aside className="aside-panel">
+        <header className="aside-panel__header">
+          <h3 id={id} className="aside-panel__title">
+            {heading}
+          </h3>
+          <button
+            className="aside-panel__close reset"
+            onClick={close}
+            aria-label="Close"
+            type="button"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M6 6L18 18M18 6L6 18"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
         </header>
-        <main>{children}</main>
+        <main className="aside-panel__body">{children}</main>
       </aside>
     </div>
   );

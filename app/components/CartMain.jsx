@@ -3,10 +3,10 @@ import {Link} from 'react-router';
 import {useAside} from '~/components/Aside';
 import {CartLineItem} from '~/components/CartLineItem';
 import {CartSummary} from './CartSummary';
+
 /**
- * Returns a map of all line items and their children.
  * @param {CartLine[]} lines
- * @return {import("/Users/carinafernandez/impetus-rex/app/components/CartMain").LineItemChildrenMap}
+ * @return {LineItemChildrenMap}
  */
 function getLineItemChildrenMap(lines) {
   const children = {};
@@ -26,14 +26,11 @@ function getLineItemChildrenMap(lines) {
   }
   return children;
 }
+
 /**
- * The main cart component that displays the cart items and summary.
- * It is used by both the /cart route and the cart aside dialog.
  * @param {CartMainProps}
  */
 export function CartMain({layout, cart: originalCart}) {
-  // The useOptimisticCart hook applies pending actions to the cart
-  // so the user immediately sees feedback when they modify the cart.
   const cart = useOptimisticCart(originalCart);
 
   const linesCount = Boolean(cart?.lines?.nodes?.length || 0);
@@ -50,31 +47,28 @@ export function CartMain({layout, cart: originalCart}) {
       aria-label={layout === 'page' ? 'Cart page' : 'Cart drawer'}
     >
       <CartEmpty hidden={linesCount} layout={layout} />
-      <div className="cart-details">
+      <div className="cart-details" hidden={!linesCount}>
         <p id="cart-lines" className="sr-only">
           Line items
         </p>
-        <div>
-          <ul aria-labelledby="cart-lines">
-            {(cart?.lines?.nodes ?? []).map((line) => {
-              // we do not render non-parent lines at the root of the cart
-              if (
-                'parentRelationship' in line &&
-                line.parentRelationship?.parent
-              ) {
-                return null;
-              }
-              return (
-                <CartLineItem
-                  key={line.id}
-                  line={line}
-                  layout={layout}
-                  childrenMap={childrenMap}
-                />
-              );
-            })}
-          </ul>
-        </div>
+        <ul aria-labelledby="cart-lines" className="cart-lines">
+          {(cart?.lines?.nodes ?? []).map((line) => {
+            if (
+              'parentRelationship' in line &&
+              line.parentRelationship?.parent
+            ) {
+              return null;
+            }
+            return (
+              <CartLineItem
+                key={line.id}
+                line={line}
+                layout={layout}
+                childrenMap={childrenMap}
+              />
+            );
+          })}
+        </ul>
         {cartHasItems && <CartSummary cart={cart} layout={layout} />}
       </div>
     </section>
@@ -90,15 +84,18 @@ export function CartMain({layout, cart: originalCart}) {
 function CartEmpty({hidden = false}) {
   const {close} = useAside();
   return (
-    <div hidden={hidden}>
-      <br />
-      <p>
-        Looks like you haven&rsquo;t added anything yet, let&rsquo;s get you
-        started!
+    <div className="cart-empty" hidden={hidden}>
+      <p className="cart-empty__label">YOUR BAG IS EMPTY</p>
+      <p className="cart-empty__copy">
+        The archive awaits. Select a piece to begin.
       </p>
-      <br />
-      <Link to="/collections" onClick={close} prefetch="viewport">
-        Continue shopping →
+      <Link
+        to="/collections/all"
+        onClick={close}
+        prefetch="viewport"
+        className="cart-empty__cta"
+      >
+        ENTER THE ARCHIVE
       </Link>
     </div>
   );

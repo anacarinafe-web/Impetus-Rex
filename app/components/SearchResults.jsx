@@ -148,7 +148,7 @@ function SearchResultsProducts({term, products}) {
 }
 
 function SearchResultsEmpty() {
-  return <p>No results, try a different search.</p>;
+  return <p className="search-empty">No signal. Try another term.</p>;
 }
 
 /** @typedef {RegularSearchReturn['result']['items']} SearchItems */
